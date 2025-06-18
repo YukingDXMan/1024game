@@ -1,4 +1,4 @@
-const size = 12;
+const size = 5;
 let board, score;
 
 function setup() {
