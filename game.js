@@ -45,7 +45,9 @@ function slideRow(row) {
       arr[i + 1] = 0;
     }
   }
-  return arr.filter(v => v).concat(Array(size - arr.filter(v => v).length).fill(0));
+  arr = arr.filter(v => v);
+  while (arr.length < size) arr.push(0);
+  return arr;
 }
 
 function rotateBoard(clockwise = true) {
@@ -59,9 +61,8 @@ function rotateBoard(clockwise = true) {
 function handleMove(direction) {
   let moved = false;
 
-  for (let i = 0; i < { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3 }[direction]; i++) {
-    rotateBoard();
-  }
+  const rotationMap = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3 };
+  for (let i = 0; i < rotationMap[direction]; i++) rotateBoard();
 
   board = board.map(row => {
     const original = [...row];
@@ -70,9 +71,7 @@ function handleMove(direction) {
     return newRow;
   });
 
-  for (let i = 0; i < (4 - { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3 }[direction]) % 4; i++) {
-    rotateBoard();
-  }
+  for (let i = 0; i < (4 - rotationMap[direction]) % 4; i++) rotateBoard();
 
   if (moved) {
     addRandom();
