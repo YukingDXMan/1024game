@@ -2,30 +2,32 @@ body {
   font-family: sans-serif;
   text-align: center;
   background: #faf8ef;
+  margin: 0;
+  padding: 20px;
 }
 
 #game-container {
-  width: 720px;
-  height: 720px;
+  width: 500px;
+  height: 500px;
   margin: 20px auto;
   background: #bbada0;
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(12, 1fr);
-  gap: 5px;
-  padding: 5px;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 10px;
+  padding: 10px;
   border-radius: 10px;
 }
 
 .tile {
   background: #cdc1b4;
-  font-size: 14px;
+  font-size: 24px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
   color: #776e65;
-  font-weight: bold;
-  border-radius: 3px;
   transition: background 0.2s;
 }
 
@@ -39,7 +41,6 @@ body {
 .tile[data-value="256"]  { background: #edcc61; }
 .tile[data-value="512"]  { background: #edc850; }
 .tile[data-value="1024"] { background: #edc53f; color: #f9f6f2; }
-.tile[data-value="2048"] { background: #edc22e; color: #f9f6f2; }
 
 #score {
   font-size: 18px;
