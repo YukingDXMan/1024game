@@ -4,11 +4,15 @@ const width = 4;
 let squares = [];
 let score = 0;
 
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
 function createBoard() {
     for (let i = 0; i < width * width; i++) {
         const square = document.createElement('div');
         square.classList.add('cell');
-        square.innerHTML = '';
         gridDisplay.appendChild(square);
         squares.push(square);
     }
@@ -29,17 +33,15 @@ function generate() {
 function moveRight() {
     for (let i = 0; i < 16; i++) {
         if (i % 4 === 0) {
-            let totalOne = squares[i].innerHTML;
-            let totalTwo = squares[i + 1].innerHTML;
-            let totalThree = squares[i + 2].innerHTML;
-            let totalFour = squares[i + 3].innerHTML;
-            let row = [parseInt(totalOne) || 0, parseInt(totalTwo) || 0, parseInt(totalThree) || 0, parseInt(totalFour) || 0];
-
+            let row = [
+                parseInt(squares[i].innerHTML) || 0,
+                parseInt(squares[i + 1].innerHTML) || 0,
+                parseInt(squares[i + 2].innerHTML) || 0,
+                parseInt(squares[i + 3].innerHTML) || 0
+            ];
             let filteredRow = row.filter(num => num);
             let missing = 4 - filteredRow.length;
-            let zeros = Array(missing).fill('');
-            let newRow = zeros.concat(filteredRow);
-
+            let newRow = Array(missing).fill('').concat(filteredRow);
             squares[i].innerHTML = newRow[0];
             squares[i + 1].innerHTML = newRow[1];
             squares[i + 2].innerHTML = newRow[2];
@@ -51,17 +53,15 @@ function moveRight() {
 function moveLeft() {
     for (let i = 0; i < 16; i++) {
         if (i % 4 === 0) {
-            let totalOne = squares[i].innerHTML;
-            let totalTwo = squares[i + 1].innerHTML;
-            let totalThree = squares[i + 2].innerHTML;
-            let totalFour = squares[i + 3].innerHTML;
-            let row = [parseInt(totalOne) || 0, parseInt(totalTwo) || 0, parseInt(totalThree) || 0, parseInt(totalFour) || 0];
-
+            let row = [
+                parseInt(squares[i].innerHTML) || 0,
+                parseInt(squares[i + 1].innerHTML) || 0,
+                parseInt(squares[i + 2].innerHTML) || 0,
+                parseInt(squares[i + 3].innerHTML) || 0
+            ];
             let filteredRow = row.filter(num => num);
             let missing = 4 - filteredRow.length;
-            let zeros = Array(missing).fill('');
-            let newRow = filteredRow.concat(zeros);
-
+            let newRow = filteredRow.concat(Array(missing).fill(''));
             squares[i].innerHTML = newRow[0];
             squares[i + 1].innerHTML = newRow[1];
             squares[i + 2].innerHTML = newRow[2];
@@ -72,41 +72,37 @@ function moveLeft() {
 
 function moveDown() {
     for (let i = 0; i < 4; i++) {
-        let totalOne = squares[i].innerHTML;
-        let totalTwo = squares[i + width].innerHTML;
-        let totalThree = squares[i + (width * 2)].innerHTML;
-        let totalFour = squares[i + (width * 3)].innerHTML;
-        let column = [parseInt(totalOne) || 0, parseInt(totalTwo) || 0, parseInt(totalThree) || 0, parseInt(totalFour) || 0];
-
+        let column = [
+            parseInt(squares[i].innerHTML) || 0,
+            parseInt(squares[i + width].innerHTML) || 0,
+            parseInt(squares[i + width * 2].innerHTML) || 0,
+            parseInt(squares[i + width * 3].innerHTML) || 0
+        ];
         let filteredColumn = column.filter(num => num);
         let missing = 4 - filteredColumn.length;
-        let zeros = Array(missing).fill('');
-        let newColumn = zeros.concat(filteredColumn);
-
+        let newColumn = Array(missing).fill('').concat(filteredColumn);
         squares[i].innerHTML = newColumn[0];
         squares[i + width].innerHTML = newColumn[1];
-        squares[i + (width * 2)].innerHTML = newColumn[2];
-        squares[i + (width * 3)].innerHTML = newColumn[3];
+        squares[i + width * 2].innerHTML = newColumn[2];
+        squares[i + width * 3].innerHTML = newColumn[3];
     }
 }
 
 function moveUp() {
     for (let i = 0; i < 4; i++) {
-        let totalOne = squares[i].innerHTML;
-        let totalTwo = squares[i + width].innerHTML;
-        let totalThree = squares[i + (width * 2)].innerHTML;
-        let totalFour = squares[i + (width * 3)].innerHTML;
-        let column = [parseInt(totalOne) || 0, parseInt(totalTwo) || 0, parseInt(totalThree) || 0, parseInt(totalFour) || 0];
-
+        let column = [
+            parseInt(squares[i].innerHTML) || 0,
+            parseInt(squares[i + width].innerHTML) || 0,
+            parseInt(squares[i + width * 2].innerHTML) || 0,
+            parseInt(squares[i + width * 3].innerHTML) || 0
+        ];
         let filteredColumn = column.filter(num => num);
         let missing = 4 - filteredColumn.length;
-        let zeros = Array(missing).fill('');
-        let newColumn = filteredColumn.concat(zeros);
-
+        let newColumn = filteredColumn.concat(Array(missing).fill(''));
         squares[i].innerHTML = newColumn[0];
         squares[i + width].innerHTML = newColumn[1];
-        squares[i + (width * 2)].innerHTML = newColumn[2];
-        squares[i + (width * 3)].innerHTML = newColumn[3];
+        squares[i + width * 2].innerHTML = newColumn[2];
+        squares[i + width * 3].innerHTML = newColumn[3];
     }
 }
 
@@ -136,47 +132,53 @@ function combineColumn() {
     checkForWin();
 }
 
+function keyRight() { moveRight(); combineRow(); moveRight(); generate(); }
+function keyLeft() { moveLeft(); combineRow(); moveLeft(); generate(); }
+function keyDown() { moveDown(); combineColumn(); moveDown(); generate(); }
+function keyUp() { moveUp(); combineColumn(); moveUp(); generate(); }
+
 function control(e) {
     if (e.keyCode === 39) keyRight();
     else if (e.keyCode === 37) keyLeft();
     else if (e.keyCode === 38) keyUp();
     else if (e.keyCode === 40) keyDown();
 }
+
 document.addEventListener('keyup', control);
 
-function keyRight() {
-    moveRight();
-    combineRow();
-    moveRight();
-    generate();
-}
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, {passive: true});
 
-function keyLeft() {
-    moveLeft();
-    combineRow();
-    moveLeft();
-    generate();
-}
+document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+}, {passive: true});
 
-function keyDown() {
-    moveDown();
-    combineColumn();
-    moveDown();
-    generate();
-}
+function handleSwipe() {
+    const xDiff = touchEndX - touchStartX;
+    const yDiff = touchEndY - touchStartY;
+    const threshold = 30;
 
-function keyUp() {
-    moveUp();
-    combineColumn();
-    moveUp();
-    generate();
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+        if (Math.abs(xDiff) > threshold) {
+            if (xDiff > 0) keyRight();
+            else keyLeft();
+        }
+    } else {
+        if (Math.abs(yDiff) > threshold) {
+            if (yDiff > 0) keyDown();
+            else keyUp();
+        }
+    }
 }
 
 function checkForWin() {
     for (let i = 0; i < squares.length; i++) {
         if (squares[i].innerHTML == 1024) {
-            alert('You Win!');
-            document.removeEventListener('keyup', control);
+            alert('1024! You Win!');
         }
     }
 }
@@ -185,7 +187,6 @@ function checkForGameOver() {
     let zeros = squares.filter(s => s.innerHTML === "").length;
     if (zeros === 0) {
         alert('Game Over');
-        document.removeEventListener('keyup', control);
     }
 }
 
