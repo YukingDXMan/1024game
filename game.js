@@ -6,8 +6,6 @@ let score = 0;
 
 let touchStartX = 0;
 let touchStartY = 0;
-let touchEndX = 0;
-let touchEndY = 0;
 
 function createBoard() {
     for (let i = 0; i < width * width; i++) {
@@ -31,6 +29,7 @@ function generate() {
 }
 
 function moveRight() {
+    let moved = false;
     for (let i = 0; i < 16; i++) {
         if (i % 4 === 0) {
             let row = [
@@ -42,15 +41,20 @@ function moveRight() {
             let filteredRow = row.filter(num => num);
             let missing = 4 - filteredRow.length;
             let newRow = Array(missing).fill('').concat(filteredRow);
+            
+            if (JSON.stringify(row) !== JSON.stringify(newRow.map(v => v === '' ? 0 : v))) moved = true;
+
             squares[i].innerHTML = newRow[0];
             squares[i + 1].innerHTML = newRow[1];
             squares[i + 2].innerHTML = newRow[2];
             squares[i + 3].innerHTML = newRow[3];
         }
     }
+    return moved;
 }
 
 function moveLeft() {
+    let moved = false;
     for (let i = 0; i < 16; i++) {
         if (i % 4 === 0) {
             let row = [
@@ -62,15 +66,20 @@ function moveLeft() {
             let filteredRow = row.filter(num => num);
             let missing = 4 - filteredRow.length;
             let newRow = filteredRow.concat(Array(missing).fill(''));
+
+            if (JSON.stringify(row) !== JSON.stringify(newRow.map(v => v === '' ? 0 : v))) moved = true;
+
             squares[i].innerHTML = newRow[0];
             squares[i + 1].innerHTML = newRow[1];
             squares[i + 2].innerHTML = newRow[2];
             squares[i + 3].innerHTML = newRow[3];
         }
     }
+    return moved;
 }
 
 function moveDown() {
+    let moved = false;
     for (let i = 0; i < 4; i++) {
         let column = [
             parseInt(squares[i].innerHTML) || 0,
@@ -81,14 +90,19 @@ function moveDown() {
         let filteredColumn = column.filter(num => num);
         let missing = 4 - filteredColumn.length;
         let newColumn = Array(missing).fill('').concat(filteredColumn);
+
+        if (JSON.stringify(column) !== JSON.stringify(newColumn.map(v => v === '' ? 0 : v))) moved = true;
+
         squares[i].innerHTML = newColumn[0];
         squares[i + width].innerHTML = newColumn[1];
         squares[i + width * 2].innerHTML = newColumn[2];
         squares[i + width * 3].innerHTML = newColumn[3];
     }
+    return moved;
 }
 
 function moveUp() {
+    let moved = false;
     for (let i = 0; i < 4; i++) {
         let column = [
             parseInt(squares[i].innerHTML) || 0,
@@ -99,17 +113,21 @@ function moveUp() {
         let filteredColumn = column.filter(num => num);
         let missing = 4 - filteredColumn.length;
         let newColumn = filteredColumn.concat(Array(missing).fill(''));
+
+        if (JSON.stringify(column) !== JSON.stringify(newColumn.map(v => v === '' ? 0 : v))) moved = true;
+
         squares[i].innerHTML = newColumn[0];
         squares[i + width].innerHTML = newColumn[1];
         squares[i + width * 2].innerHTML = newColumn[2];
         squares[i + width * 3].innerHTML = newColumn[3];
     }
+    return moved;
 }
 
 function combineRow() {
     for (let i = 0; i < 15; i++) {
         if (squares[i].innerHTML === squares[i + 1].innerHTML && squares[i].innerHTML !== "" && (i + 1) % 4 !== 0) {
-            let combinedTotal = parseInt(squares[i].innerHTML) + parseInt(squares[i + 1].innerHTML);
+            let combinedTotal = parseInt(squares[i].innerHTML) * 2;
             squares[i].innerHTML = combinedTotal;
             squares[i + 1].innerHTML = "";
             score += combinedTotal;
@@ -122,7 +140,7 @@ function combineRow() {
 function combineColumn() {
     for (let i = 0; i < 12; i++) {
         if (squares[i].innerHTML === squares[i + width].innerHTML && squares[i].innerHTML !== "") {
-            let combinedTotal = parseInt(squares[i].innerHTML) + parseInt(squares[i + width].innerHTML);
+            let combinedTotal = parseInt(squares[i].innerHTML) * 2;
             squares[i].innerHTML = combinedTotal;
             squares[i + width].innerHTML = "";
             score += combinedTotal;
@@ -132,53 +150,50 @@ function combineColumn() {
     checkForWin();
 }
 
-function keyRight() { moveRight(); combineRow(); moveRight(); generate(); }
-function keyLeft() { moveLeft(); combineRow(); moveLeft(); generate(); }
-function keyDown() { moveDown(); combineColumn(); moveDown(); generate(); }
-function keyUp() { moveUp(); combineColumn(); moveUp(); generate(); }
+function actionRight() { moveRight(); combineRow(); moveRight(); generate(); }
+function actionLeft() { moveLeft(); combineRow(); moveLeft(); generate(); }
+function actionDown() { moveDown(); combineColumn(); moveDown(); generate(); }
+function actionUp() { moveUp(); combineColumn(); moveUp(); generate(); }
 
 function control(e) {
-    if (e.keyCode === 39) keyRight();
-    else if (e.keyCode === 37) keyLeft();
-    else if (e.keyCode === 38) keyUp();
-    else if (e.keyCode === 40) keyDown();
+    if (e.keyCode === 39) actionRight();
+    else if (e.keyCode === 37) actionLeft();
+    else if (e.keyCode === 38) actionUp();
+    else if (e.keyCode === 40) actionDown();
 }
 
 document.addEventListener('keyup', control);
 
 document.addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
-    touchStartY = e.changedTouches[0].screenY;
-}, {passive: true});
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, {passive: false});
 
 document.addEventListener('touchend', e => {
-    touchEndX = e.changedTouches[0].screenX;
-    touchEndY = e.changedTouches[0].screenY;
-    handleSwipe();
-}, {passive: true});
-
-function handleSwipe() {
-    const xDiff = touchEndX - touchStartX;
-    const yDiff = touchEndY - touchStartY;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
     const threshold = 30;
 
-    if (Math.abs(xDiff) > Math.abs(yDiff)) {
-        if (Math.abs(xDiff) > threshold) {
-            if (xDiff > 0) keyRight();
-            else keyLeft();
-        }
-    } else {
-        if (Math.abs(yDiff) > threshold) {
-            if (yDiff > 0) keyDown();
-            else keyUp();
+    if (absX > threshold || absY > threshold) {
+        if (absX > absY) {
+            if (dx > 0) actionRight();
+            else actionLeft();
+        } else {
+            if (dy > 0) actionDown();
+            else actionUp();
         }
     }
-}
+}, {passive: false});
 
 function checkForWin() {
     for (let i = 0; i < squares.length; i++) {
         if (squares[i].innerHTML == 1024) {
-            alert('1024! You Win!');
+            alert('Congratulations! 1024 Clear!');
         }
     }
 }
@@ -186,15 +201,16 @@ function checkForWin() {
 function checkForGameOver() {
     let zeros = squares.filter(s => s.innerHTML === "").length;
     if (zeros === 0) {
-        alert('Game Over');
+        alert('Game Over! Try again?');
     }
 }
 
 function updateStyles() {
     for (let i = 0; i < squares.length; i++) {
         squares[i].className = 'cell';
-        if (squares[i].innerHTML !== "") {
-            squares[i].classList.add('tile-' + squares[i].innerHTML);
+        let val = squares[i].innerHTML;
+        if (val !== "") {
+            squares[i].classList.add('tile-' + val);
         }
     }
 }
